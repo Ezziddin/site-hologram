@@ -1,0 +1,28 @@
+{
+  "name": "site_hologram",
+  "version": "1.0.0",
+  "description": "SITE Hologram clock",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "hologram",
+    "lookingGlass3D",
+    "three.js",
+    "webXR"
+  ],
+  "author": "Ala'a Ezziddin",
+  "license": "MIT",
+  "dependencies": {
+    "@lookingglass/webxr": "^0.4.0",
+    "lil-gui": "^0.19.2",
+    "three": "^0.166.0"
+  },
+  "devDependencies": {
+    "vite": "^5.3.2"
+  }
+}
