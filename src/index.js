@@ -5,6 +5,7 @@ import {
   LookingGlassConfig,
 } from '@lookingglass/webxr';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { clockConfig, starsConfig } from './config';
 
 /**
  * BEGIN SCAFOLDING
@@ -75,24 +76,14 @@ const axesHelper = new Three.AxesHelper(3);
 axesHelper.visible = false;
 scene.add(axesHelper);
 
-const clockConfig = {
-  ticksNum: 30,
-  redius: 3,
-  movingTicksNum: 5,
-  tickDimension: {
-    x: 0.5,
-    y: 1,
-    z: 0.3,
-  },
-};
-
 const { ticksNum, tickDimension, movingTicksNum } = clockConfig;
 
 const planeMaterial = new Three.MeshStandardMaterial({ color: 0x111111 });
 planeMaterial.roughness = 0.6;
 planeMaterial.metalness = 0.2;
+planeMaterial.side = Three.DoubleSide;
 const plane = new Three.Mesh(
-  new Three.PlaneGeometry(clockConfig.redius * 2 + tickDimension.y, 10),
+  new Three.PlaneGeometry(starsConfig.dimension.w, starsConfig.dimension.h),
   planeMaterial
 );
 plane.position.z = -0.5;
@@ -103,7 +94,7 @@ const tickMaterial = new Three.MeshStandardMaterial({
 });
 tickMaterial.roughness = 0;
 tickMaterial.metalness = 0.5;
-tickMaterial.transparent = true;
+// tickMaterial.transparent = true;
 tickMaterial.opacity = 0.4;
 
 const tickGeometry = new Three.BoxGeometry(
@@ -111,7 +102,7 @@ const tickGeometry = new Three.BoxGeometry(
   tickDimension.y,
   0.5
 );
-tickGeometry.translate(0, 3, 0);
+tickGeometry.translate(0, 2.8, 0);
 for (let i = 0; i < ticksNum; i++) {
   const tick = new Three.Mesh(tickGeometry, tickMaterial);
   tick.rotation.z = i * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
@@ -130,10 +121,9 @@ for (let i = 1; i <= movingTicksNum; i++) {
     tickDimension.y,
     tickDimension.z * i
   );
-  tickGeometry.translate(0, 3, (tickDimension.z * i) / 2);
+  tickGeometry.translate(0, 2.8, (tickDimension.z * i) / 2);
 
   const tick = new Three.Mesh(tickGeometry, movingTickMaterial);
-  //   tick.rotation.z = i * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
   scene.add(tick);
   movingTicks.push(tick);
 }
@@ -152,25 +142,26 @@ downLight.position.set(0, -1, 0);
 scene.add(downLight);
 
 /** blue lights */
-const color = `rgb(25, 162,248)`;
+const color = `rgb(189, 177, 143)`;
 const blueMaterial = new Three.MeshBasicMaterial({
   color: color,
 });
-const blueGeometery = new Three.BoxGeometry(0.1, 0.17, 0.07);
+const blueGeometery = new Three.BoxGeometry(0.1, 0.17, 0.11);
 
-const farPointLight = new Three.PointLight(0x0075ef, 10);
+const farPointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
 farPointLight.position.set(1, 1.3, 0);
+
 scene.add(farPointLight);
 const farLight = new Three.Mesh(blueGeometery, blueMaterial);
 farLight.position.set(1, 1.3, 0);
 
-const middlePointLight = new Three.PointLight(0x0075ef, 10);
+const middlePointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
 middlePointLight.position.set(-1.8, 0.4, 0.3);
 scene.add(middlePointLight);
 const middleLight = new Three.Mesh(blueGeometery, blueMaterial);
 middleLight.position.set(-1.8, 0.4, 0.3);
 
-const closePointLight = new Three.PointLight(0x0075ef, 10);
+const closePointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
 closePointLight.position.set(0.6, -3, 0.5);
 scene.add(closePointLight);
 const closeLight = new Three.Mesh(blueGeometery, blueMaterial);
@@ -192,13 +183,11 @@ scene.add(closeLight);
 function ticking() {
   let index = 0;
   const execute = () => {
-    index = index + 1;
-    for (let i = 1; i <= movingTicksNum; i++) {
-      i === movingTicksNum && console.log((index + i) % ticksNum);
-      movingTicks[i - 1].rotation.z =
-        ((index + i) % ticksNum) *
-        ((Math.PI * 2) / (clockConfig.ticksNum - 10));
+    for (let i = 0; i < movingTicksNum; i++) {
+      movingTicks[i].rotation.z =
+        (index + i) * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
     }
+    index = index + 1;
   };
 
   execute();
@@ -221,5 +210,3 @@ config.targetDiam = 10;
 config.fovy = (40 * Math.PI) / 180;
 new LookingGlassWebXRPolyfill();
 document.body.appendChild(VRButton.createButton(renderer));
-
-// 1bxK2EswnZeRbvR0Dm6RSizl4yW_4UQPmtAb8XhFqtTsyqCM4
