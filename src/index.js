@@ -6,6 +6,8 @@ import {
 } from '@lookingglass/webxr';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { clockConfig, starsConfig } from './config';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 /**
  * BEGIN SCAFOLDING
@@ -76,8 +78,9 @@ const axesHelper = new Three.AxesHelper(3);
 axesHelper.visible = false;
 scene.add(axesHelper);
 
-const { ticksNum, tickDimension, movingTicksNum } = clockConfig;
+const { ticksNum, tickDimension, movingTicksNum, tickColor } = clockConfig;
 
+/** Plane **/
 const planeMaterial = new Three.MeshStandardMaterial({ color: 0x111111 });
 planeMaterial.roughness = 0.6;
 planeMaterial.metalness = 0.2;
@@ -89,8 +92,9 @@ const plane = new Three.Mesh(
 plane.position.z = -0.5;
 scene.add(plane);
 
+/** Ticks */
 const tickMaterial = new Three.MeshStandardMaterial({
-  color: `rgb(0, 64, 40)`,
+  color: tickColor,
 });
 tickMaterial.roughness = 0;
 tickMaterial.metalness = 0.5;
@@ -110,7 +114,7 @@ for (let i = 0; i < ticksNum; i++) {
 }
 
 const movingTickMaterial = new Three.MeshStandardMaterial({
-  color: `rgb(0, 64, 40)`,
+  color: tickColor,
 });
 movingTickMaterial.roughness = 0;
 movingTickMaterial.metalness = 0.5;
@@ -127,6 +131,27 @@ for (let i = 1; i <= movingTicksNum; i++) {
   scene.add(tick);
   movingTicks.push(tick);
 }
+
+/** Text */
+const fontLoader = new FontLoader();
+
+fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
+  const textGeometry = new TextGeometry('SITE', {
+    font: font,
+    size: 1,
+    depth: 0.9,
+    curveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0.03,
+    bevelSize: 0.02,
+    bevelOffset: 0,
+    bevelSegments: 2,
+  });
+  textGeometry.center();
+  const text = new Three.Mesh(textGeometry, tickMaterial);
+  text.position.z = 0.3;
+  scene.add(text);
+});
 
 /** ambient light */
 const ambientLight = new Three.AmbientLight(0xffffff, 1.5);

@@ -1,4 +1,5 @@
 export const clockConfig = {
+  tickColor: 'rgb(0, 64, 40)',
   ticksNum: 30,
   redius: 3,
   movingTicksNum: 5,
