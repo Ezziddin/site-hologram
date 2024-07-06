@@ -233,22 +233,20 @@ const generateStart = () => {
   scene.add(movePointLight);
   scene.add(moveLight);
   const delay = Math.random() * 1.5;
-  gsap.to(movePointLight.position, {
+  const animationConfig = {
     duration: 6,
     delay,
     z: 2,
-    x: x + 1.3,
-    y: y + 1.3,
+    x: x > 0 ? x - 1.3 : x + 1.3,
+    y: y > 0 ? y - 1.3 : y + 1.3,
     ease: 'power2.in',
+  };
+  gsap.to(movePointLight.position, {
+    ...animationConfig,
     onComplete: () => scene.remove(movePointLight),
   });
   gsap.to(moveLight.position, {
-    duration: 6,
-    delay,
-    z: 2,
-    x: x + 1.3,
-    y: y + 1.3,
-    ease: 'power2.in',
+    ...animationConfig,
     onComplete: () => scene.remove(moveLight),
   });
 };
@@ -259,32 +257,8 @@ setInterval(() => {
   }
 }, timeout);
 
-// const movePointLight = new Three.PointLight(colors[1][0], 10);
-// const moveLight = new Three.Mesh(blueGeometery, blueMaterial);
-
-// movePointLight.position.set(-0.7, 1.5, -1 + 0.055);
-// moveLight.position.set(-0.7, 1.5, -1);
-// scene.add(movePointLight);
-// scene.add(moveLight);
-
-const clock = new Three.Clock();
-
-// const updateMovingLight = (light, mesh, ms) => {
-//   console.log('moving...');
-//   light.position.z += ms * 0.001;
-//   mesh.position.z += ms * 0.001;
-
-//   light.position.x -= ms * 0.0008;
-//   mesh.position.x -= ms * 0.0008;
-//   if (light.position.z > 2 && mesh.position.z > 2) {
-//     scene.remove(mesh, light);
-//   }
-// };
-
 renderer.setAnimationLoop(function () {
   renderer.render(scene, camera);
-  // const elapsedTime = clock.getElapsedTime();
-  // updateMovingLight(movePointLight, moveLight, elapsedTime);
   controls.update();
 });
 
