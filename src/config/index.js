@@ -1,4 +1,5 @@
 export const clockConfig = {
+  text: 'SITE',
   tickColor: 'rgb(0, 64, 40)',
   ticksNum: 30,
   redius: 3,
@@ -10,12 +11,22 @@ export const clockConfig = {
   },
 };
 
+const width = clockConfig.redius * 2 + clockConfig.tickDimension.y;
+const height = 10;
+
 export const starsConfig = {
   dimension: {
-    w: clockConfig.redius * 2 + clockConfig.tickDimension.y,
-    h: 10,
+    w: width,
+    h: height,
   },
   numPerRound: 2,
+  timeout: 3000,
+  timeoutRangePerRound: [0, 1000],
+  parameters: {
+    z: [-1.5, -0.55],
+    x: [-(width / 2), width / 2],
+    y: [-(height / 2), height / 2],
+  },
   sizes: [
     {
       brightness: 13,

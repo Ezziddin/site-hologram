@@ -8,6 +8,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { clockConfig, starsConfig } from './config';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import gsap from 'gsap';
 
 /**
  * BEGIN SCAFOLDING
@@ -79,6 +80,7 @@ axesHelper.visible = false;
 scene.add(axesHelper);
 
 const { ticksNum, tickDimension, movingTicksNum, tickColor } = clockConfig;
+const { dimension, colors } = starsConfig;
 
 /** Plane **/
 const planeMaterial = new Three.MeshStandardMaterial({ color: 0x111111 });
@@ -86,7 +88,7 @@ planeMaterial.roughness = 0.6;
 planeMaterial.metalness = 0.2;
 planeMaterial.side = Three.DoubleSide;
 const plane = new Three.Mesh(
-  new Three.PlaneGeometry(starsConfig.dimension.w, starsConfig.dimension.h),
+  new Three.PlaneGeometry(dimension.w, dimension.h),
   planeMaterial
 );
 plane.position.z = -0.5;
@@ -98,8 +100,6 @@ const tickMaterial = new Three.MeshStandardMaterial({
 });
 tickMaterial.roughness = 0;
 tickMaterial.metalness = 0.5;
-// tickMaterial.transparent = true;
-tickMaterial.opacity = 0.4;
 
 const tickGeometry = new Three.BoxGeometry(
   tickDimension.x,
@@ -123,7 +123,7 @@ for (let i = 1; i <= movingTicksNum; i++) {
   const tickGeometry = new Three.BoxGeometry(
     tickDimension.x,
     tickDimension.y,
-    tickDimension.z * i
+    tickDimension.z * (i * 0.68)
   );
   tickGeometry.translate(0, 2.8, (tickDimension.z * i) / 2);
 
@@ -136,7 +136,7 @@ for (let i = 1; i <= movingTicksNum; i++) {
 const fontLoader = new FontLoader();
 
 fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
-  const textGeometry = new TextGeometry('SITE', {
+  const textGeometry = new TextGeometry(clockConfig.text, {
     font: font,
     size: 1,
     depth: 0.9,
@@ -154,7 +154,7 @@ fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
 });
 
 /** ambient light */
-const ambientLight = new Three.AmbientLight(0xffffff, 1.5);
+const ambientLight = new Three.AmbientLight(0xffffff, 3);
 scene.add(ambientLight);
 
 // Directional light
@@ -167,26 +167,25 @@ downLight.position.set(0, -1, 0);
 scene.add(downLight);
 
 /** blue lights */
-const color = `rgb(189, 177, 143)`;
 const blueMaterial = new Three.MeshBasicMaterial({
-  color: color,
+  color: colors[1][1],
 });
 const blueGeometery = new Three.BoxGeometry(0.1, 0.17, 0.11);
 
-const farPointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
+const farPointLight = new Three.PointLight(colors[1][0], 10);
 farPointLight.position.set(1, 1.3, 0);
 
 scene.add(farPointLight);
 const farLight = new Three.Mesh(blueGeometery, blueMaterial);
 farLight.position.set(1, 1.3, 0);
 
-const middlePointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
+const middlePointLight = new Three.PointLight(colors[1][0], 10);
 middlePointLight.position.set(-1.8, 0.4, 0.3);
 scene.add(middlePointLight);
 const middleLight = new Three.Mesh(blueGeometery, blueMaterial);
 middleLight.position.set(-1.8, 0.4, 0.3);
 
-const closePointLight = new Three.PointLight('rgb(139, 127, 93)', 10);
+const closePointLight = new Three.PointLight(colors[1][0], 10);
 closePointLight.position.set(0.6, -3, 0.5);
 scene.add(closePointLight);
 const closeLight = new Three.Mesh(blueGeometery, blueMaterial);
@@ -196,14 +195,98 @@ scene.add(farLight);
 scene.add(middleLight);
 scene.add(closeLight);
 
-// const frameTick = () => {
-//   renderer.render(scene, camera);
-//   //   controls.update();
+/**
+ * Auto Light generator
+ */
 
-//   window.requestAnimationFrame(frameTick);
+const { timeout, sizes: startSizes, parameters, numPerRound } = starsConfig;
+const materials = [];
+const geometries = [];
+for (let i = 0; i < colors.length; i++) {
+  materials.push(new Three.MeshBasicMaterial({ color: colors[i][1] }));
+}
+
+for (let i = 0; i < startSizes.length; i++) {
+  geometries.push(new Three.BoxGeometry(...startSizes[i].size));
+}
+
+const generateStart = () => {
+  const colorIndex = Math.floor(Math.random() * colors.length);
+  const color = colors[colorIndex];
+  const sizeIndex = Math.floor(Math.random() * startSizes.length);
+  const size = startSizes[sizeIndex];
+  const x =
+    Math.random() * (parameters.x[1] - parameters.x[0]) + parameters.x[0];
+  const y =
+    Math.random() * (parameters.y[1] - parameters.y[0]) + parameters.y[0];
+  const z =
+    Math.random() * (parameters.z[1] - parameters.z[0]) + parameters.z[0];
+
+  const movePointLight = new Three.PointLight(color[0], size.brightness);
+  const moveLight = new Three.Mesh(
+    geometries[sizeIndex],
+    materials[colorIndex]
+  );
+
+  movePointLight.position.set(x, y, z);
+  moveLight.position.set(x, y, z);
+  scene.add(movePointLight);
+  scene.add(moveLight);
+  const delay = Math.random() * 1.5;
+  gsap.to(movePointLight.position, {
+    duration: 6,
+    delay,
+    z: 2,
+    x: x + 1.3,
+    y: y + 1.3,
+    ease: 'power2.in',
+    onComplete: () => scene.remove(movePointLight),
+  });
+  gsap.to(moveLight.position, {
+    duration: 6,
+    delay,
+    z: 2,
+    x: x + 1.3,
+    y: y + 1.3,
+    ease: 'power2.in',
+    onComplete: () => scene.remove(moveLight),
+  });
+};
+
+setInterval(() => {
+  for (let i = 0; i < numPerRound; i++) {
+    generateStart();
+  }
+}, timeout);
+
+// const movePointLight = new Three.PointLight(colors[1][0], 10);
+// const moveLight = new Three.Mesh(blueGeometery, blueMaterial);
+
+// movePointLight.position.set(-0.7, 1.5, -1 + 0.055);
+// moveLight.position.set(-0.7, 1.5, -1);
+// scene.add(movePointLight);
+// scene.add(moveLight);
+
+const clock = new Three.Clock();
+
+// const updateMovingLight = (light, mesh, ms) => {
+//   console.log('moving...');
+//   light.position.z += ms * 0.001;
+//   mesh.position.z += ms * 0.001;
+
+//   light.position.x -= ms * 0.0008;
+//   mesh.position.x -= ms * 0.0008;
+//   if (light.position.z > 2 && mesh.position.z > 2) {
+//     scene.remove(mesh, light);
+//   }
 // };
 
-// frameTick();
+renderer.setAnimationLoop(function () {
+  renderer.render(scene, camera);
+  // const elapsedTime = clock.getElapsedTime();
+  // updateMovingLight(movePointLight, moveLight, elapsedTime);
+  controls.update();
+});
 
 function ticking() {
   let index = 0;
@@ -220,11 +303,6 @@ function ticking() {
 }
 ticking();
 
-renderer.setAnimationLoop(function () {
-  renderer.render(scene, camera);
-  controls.update();
-});
-
 /** WebXR */
 const config = LookingGlassConfig;
 // config.tileHeight = 512;
@@ -233,5 +311,6 @@ config.targetY = 0;
 config.targetZ = 0;
 config.targetDiam = 10;
 config.fovy = (40 * Math.PI) / 180;
+config.depthiness = 1.61;
 new LookingGlassWebXRPolyfill();
 document.body.appendChild(VRButton.createButton(renderer));
