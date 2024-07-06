@@ -79,7 +79,13 @@ const axesHelper = new Three.AxesHelper(3);
 axesHelper.visible = false;
 scene.add(axesHelper);
 
-const { ticksNum, tickDimension, movingTicksNum, tickColor } = clockConfig;
+const {
+  ticksNum,
+  tickDimension,
+  movingTicksNum,
+  tickColor,
+  tickColorsGradient,
+} = clockConfig;
 const { dimension, colors } = starsConfig;
 
 /** Plane **/
@@ -104,7 +110,7 @@ tickMaterial.metalness = 0.5;
 const tickGeometry = new Three.BoxGeometry(
   tickDimension.x,
   tickDimension.y,
-  0.5
+  tickDimension.z
 );
 tickGeometry.translate(0, 2.8, 0);
 for (let i = 0; i < ticksNum; i++) {
@@ -113,21 +119,24 @@ for (let i = 0; i < ticksNum; i++) {
   scene.add(tick);
 }
 
-const movingTickMaterial = new Three.MeshStandardMaterial({
-  color: tickColor,
-});
-movingTickMaterial.roughness = 0;
-movingTickMaterial.metalness = 0.5;
 const movingTicks = [];
 for (let i = 1; i <= movingTicksNum; i++) {
+  const movingTickMaterial = new Three.MeshStandardMaterial({
+    color: tickColorsGradient[i - 1],
+  });
+  movingTickMaterial.roughness = 0;
+  movingTickMaterial.metalness = 0.5;
+  const z = tickDimension.z + i * 0.15;
   const tickGeometry = new Three.BoxGeometry(
     tickDimension.x,
     tickDimension.y,
-    tickDimension.z * (i * 0.68)
+    z
   );
-  tickGeometry.translate(0, 2.8, (tickDimension.z * i) / 2);
+  tickGeometry.translate(0, 2.8, z / 2 - tickDimension.z / 2);
 
   const tick = new Three.Mesh(tickGeometry, movingTickMaterial);
+  tick.material.depthTest = false;
+  tick.renderOrder = 10;
   scene.add(tick);
   movingTicks.push(tick);
 }

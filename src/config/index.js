@@ -1,14 +1,15 @@
 export const clockConfig = {
   text: 'SITE',
-  tickColor: 'rgb(0, 64, 40)',
+  tickColor: '#004028',
   ticksNum: 30,
   redius: 3,
   movingTicksNum: 5,
   tickDimension: {
     x: 0.4,
     y: 1,
-    z: 0.3,
+    z: 0.9,
   },
+  tickColorsGradient: ['#004028', '#2D654A', '#538C6F', '#70AA8C', '#7BB597'],
 };
 
 const width = clockConfig.redius * 2 + clockConfig.tickDimension.y;
@@ -42,7 +43,8 @@ export const starsConfig = {
     }, // small
   ],
   colors: [
-    [0x0075ef, 'rgb(25, 162, 248)'],
+    [0x0075ef, 'rgb(56, 162, 248)'],
     ['rgb(139, 127, 93)', 'rgb(189, 177, 143)'],
+    ['rgb(119,112,163)', 'rgb(149,142,203)'],
   ],
 };
