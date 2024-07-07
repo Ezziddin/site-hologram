@@ -175,8 +175,8 @@ for (let i = 1; i <= movingTicksNum; i++) {
   tickGeometry.translate(0, 2.8, z / 2 - tickDimension.z / 2);
 
   const tick = new Three.Mesh(tickGeometry, movingTickMaterial);
-  tick.material.depthTest = false;
-  tick.renderOrder = 10;
+  // tick.material.depthTest = false;
+  // tick.renderOrder = 10;
   scene.add(tick);
   movingTicks.push(tick);
   movingTickColors
@@ -278,7 +278,7 @@ scene.add(closeLight);
  * Auto Light generator
  */
 
-const { timeout, sizes: startSizes, parameters, numPerRound } = starsConfig;
+const { sizes: startSizes, parameters } = starsConfig;
 const materials = [];
 const geometries = [];
 for (let i = 0; i < colors.length; i++) {
@@ -389,7 +389,12 @@ renderer.setAnimationLoop(function () {
 function ticking() {
   let index = 0;
   const execute = () => {
+    for (let i = 0; i < ticksNum; i++) {
+      scene.add(staticTicks[i]);
+    }
     for (let i = 0; i < movingTicksNum; i++) {
+      scene.remove(staticTicks[(index + i) % ticksNum]);
+
       movingTicks[i].rotation.z =
         (index + i) * ((Math.PI * 2) / clockConfig.ticksNum);
     }
@@ -397,7 +402,7 @@ function ticking() {
   };
 
   execute();
-  setInterval(execute, 995);
+  setInterval(execute, 990);
 }
 ticking();
 
