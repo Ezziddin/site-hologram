@@ -22,7 +22,6 @@ export const starsConfig = {
   },
   numPerRound: 2,
   timeout: 3000,
-  timeoutRangePerRound: [0, 1000],
   parameters: {
     z: [-1.5, -0.55],
     x: [-(width / 2), width / 2],
@@ -42,6 +41,7 @@ export const starsConfig = {
       size: [0.07, 0.13, 0.09],
     }, // small
   ],
+  enabled: true,
   colors: [
     [0x0075ef, 'rgb(56, 162, 248)'],
     ['rgb(139, 127, 93)', 'rgb(189, 177, 143)'],

@@ -9,7 +9,13 @@ import { clockConfig, starsConfig } from './config';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import gsap from 'gsap';
+import GUI from 'lil-gui';
 
+/**
+ * Debug
+ */
+const gui = new GUI({ title: 'SITE Clock Controls' });
+gui.close();
 /**
  * BEGIN SCAFOLDING
  */
@@ -17,7 +23,6 @@ import gsap from 'gsap';
 const canvas = document.getElementById('canvas');
 
 canvas.addEventListener('dblclick', () => {
-  console.log('fbl');
   if (!document.fullscreenElement) {
     canvas.requestFullscreen();
   } else {
@@ -100,9 +105,16 @@ const plane = new Three.Mesh(
 plane.position.z = -0.5;
 scene.add(plane);
 
+gui
+  .addColor(planeMaterial, 'color')
+  .onChange(() => {
+    material.color.set(planeMaterial.color);
+  })
+  .name('Wall color');
+
 /** Ticks */
 const tickMaterial = new Three.MeshStandardMaterial({
-  color: tickColor,
+  color: clockConfig.tickColor,
 });
 tickMaterial.roughness = 0;
 tickMaterial.metalness = 0.5;
@@ -113,13 +125,41 @@ const tickGeometry = new Three.BoxGeometry(
   tickDimension.z
 );
 tickGeometry.translate(0, 2.8, 0);
-for (let i = 0; i < ticksNum; i++) {
-  const tick = new Three.Mesh(tickGeometry, tickMaterial);
-  tick.rotation.z = i * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
-  scene.add(tick);
-}
 
+const staticTicks = [];
+const generateTicks = () => {
+  for (let i = 0; i < ticksNum; i++) {
+    const tick = new Three.Mesh(tickGeometry, tickMaterial);
+    tick.rotation.z = i * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
+    scene.add(tick);
+    staticTicks.push(tick);
+  }
+};
+generateTicks();
+
+const staticTicksConfig = gui.addFolder('Static Ticks');
+
+staticTicksConfig
+  .add(clockConfig, 'ticksNum')
+  .min(clockConfig.movingTicksNum)
+  .max(40)
+  .step(1)
+  .onFinishChange(() => {
+    staticTicks.forEach((tick) => scene.remove(tick));
+    generateTicks();
+  })
+  .name('Ticks number');
+
+staticTicksConfig
+  .addColor(tickMaterial, 'color')
+  .onChange(() => {
+    material.color.set(tickMaterial.color);
+  })
+  .name('Ticks color');
+
+const movingTickColors = gui.addFolder('Moving Ticks');
 const movingTicks = [];
+
 for (let i = 1; i <= movingTicksNum; i++) {
   const movingTickMaterial = new Three.MeshStandardMaterial({
     color: tickColorsGradient[i - 1],
@@ -139,13 +179,18 @@ for (let i = 1; i <= movingTicksNum; i++) {
   tick.renderOrder = 10;
   scene.add(tick);
   movingTicks.push(tick);
+  movingTickColors
+    .addColor(movingTickMaterial, 'color')
+    .onChange(() => movingTickMaterial.color.set(movingTickMaterial.color))
+    .name(`Tick #${i}`);
 }
 
 /** Text */
+const fontConfig = gui.addFolder('Title');
 const fontLoader = new FontLoader();
 
 fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
-  const textGeometry = new TextGeometry(clockConfig.text, {
+  const textConfig = {
     font: font,
     size: 1,
     depth: 0.9,
@@ -155,9 +200,34 @@ fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
     bevelSize: 0.02,
     bevelOffset: 0,
     bevelSegments: 2,
-  });
+  };
+  let textGeometry = new TextGeometry(clockConfig.text, textConfig);
   textGeometry.center();
-  const text = new Three.Mesh(textGeometry, tickMaterial);
+  let text = new Three.Mesh(textGeometry, tickMaterial);
+
+  const onConfigChange = () => {
+    textGeometry.dispose();
+    scene.remove(text);
+    textGeometry = new TextGeometry(clockConfig.text, textConfig);
+    textGeometry.center();
+    text = new Three.Mesh(textGeometry, tickMaterial);
+    text.position.z = 0.3;
+    scene.add(text);
+  };
+
+  fontConfig.add(clockConfig, 'text').onChange(() => {
+    onConfigChange();
+  });
+
+  fontConfig
+    .add(textConfig, 'size')
+    .onChange(() => {
+      onConfigChange();
+    })
+    .min(0.2)
+    .max(3)
+    .step(0.1);
+
   text.position.z = 0.3;
   scene.add(text);
 });
@@ -260,11 +330,56 @@ const generateStart = () => {
   });
 };
 
-setInterval(() => {
-  for (let i = 0; i < numPerRound; i++) {
+let intervalId;
+
+starsConfig.generateStart = generateStart;
+const starsGuiConfig = gui.addFolder('Stars');
+starsGuiConfig
+  .add(starsConfig, 'enabled')
+  .onChange((val) => {
+    if (!val) {
+      intervalId && clearInterval(intervalId);
+    } else {
+      executeInterval();
+    }
+  })
+  .name('Auto Generation');
+
+starsGuiConfig
+  .add(starsConfig, 'timeout')
+  .min(100)
+  .max(10000)
+  .step(100)
+  .onFinishChange(() => {
+    intervalId && clearInterval(intervalId);
+    executeInterval();
+  })
+  .name('Interval ms');
+
+starsGuiConfig
+  .add(starsConfig, 'numPerRound')
+  .min(1)
+  .max(15)
+  .step(1)
+  .onFinishChange(() => {
+    intervalId && clearInterval(intervalId);
+    executeInterval();
+  })
+  .name('Stars per interval');
+
+const executeInterval = () => {
+  for (let i = 0; i < starsConfig.numPerRound; i++) {
     generateStart();
   }
-}, timeout);
+  intervalId = setInterval(() => {
+    for (let i = 0; i < starsConfig.numPerRound; i++) {
+      generateStart();
+    }
+  }, starsConfig.timeout);
+};
+executeInterval();
+
+starsGuiConfig.add(starsConfig, 'generateStart').name('Generate a Star');
 
 renderer.setAnimationLoop(function () {
   renderer.render(scene, camera);
