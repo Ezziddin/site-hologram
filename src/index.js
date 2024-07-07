@@ -130,7 +130,7 @@ const staticTicks = [];
 const generateTicks = () => {
   for (let i = 0; i < ticksNum; i++) {
     const tick = new Three.Mesh(tickGeometry, tickMaterial);
-    tick.rotation.z = i * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
+    tick.rotation.z = i * ((Math.PI * 2) / clockConfig.ticksNum);
     scene.add(tick);
     staticTicks.push(tick);
   }
@@ -391,7 +391,7 @@ function ticking() {
   const execute = () => {
     for (let i = 0; i < movingTicksNum; i++) {
       movingTicks[i].rotation.z =
-        (index + i) * ((Math.PI * 2) / (clockConfig.ticksNum - 10));
+        (index + i) * ((Math.PI * 2) / clockConfig.ticksNum);
     }
     index = index + 1;
   };

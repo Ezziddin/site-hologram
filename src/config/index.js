@@ -1,7 +1,7 @@
 export const clockConfig = {
   text: 'SITE',
   tickColor: '#004028',
-  ticksNum: 30,
+  ticksNum: 20,
   redius: 3,
   movingTicksNum: 5,
   tickDimension: {
