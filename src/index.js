@@ -84,13 +84,8 @@ const axesHelper = new Three.AxesHelper(3);
 axesHelper.visible = false;
 scene.add(axesHelper);
 
-const {
-  ticksNum,
-  tickDimension,
-  movingTicksNum,
-  tickColor,
-  tickColorsGradient,
-} = clockConfig;
+const { ticksNum, tickDimension, movingTicksNum, tickColorsGradient } =
+  clockConfig;
 const { dimension, colors } = starsConfig;
 
 /** Plane **/
@@ -126,8 +121,9 @@ const tickGeometry = new Three.BoxGeometry(
 );
 tickGeometry.translate(0, 2.8, 0);
 
-const staticTicks = [];
+let staticTicks = [];
 const generateTicks = () => {
+  staticTicks = [];
   for (let i = 0; i < ticksNum; i++) {
     const tick = new Three.Mesh(tickGeometry, tickMaterial);
     tick.rotation.z = i * ((Math.PI * 2) / clockConfig.ticksNum);
@@ -386,6 +382,7 @@ renderer.setAnimationLoop(function () {
   controls.update();
 });
 
+let tickingIntervalId;
 function ticking() {
   let index = 0;
   const execute = () => {
@@ -393,16 +390,17 @@ function ticking() {
       scene.add(staticTicks[i]);
     }
     for (let i = 0; i < movingTicksNum; i++) {
-      scene.remove(staticTicks[(index + i) % ticksNum]);
-
-      movingTicks[i].rotation.z =
-        (index + i) * ((Math.PI * 2) / clockConfig.ticksNum);
+      const angle = (index + i) * ((Math.PI * 2) / clockConfig.ticksNum);
+      const staticIndex =
+        (angle % (Math.PI * 2)) / ((Math.PI * 2) / clockConfig.ticksNum);
+      scene.remove(staticTicks[Math.round(staticIndex)]);
+      movingTicks[i].rotation.z = angle;
     }
     index = index + 1;
   };
 
   execute();
-  setInterval(execute, 990);
+  tickingIntervalId = setInterval(execute, 990);
 }
 ticking();
 
