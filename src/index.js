@@ -84,8 +84,7 @@ const axesHelper = new Three.AxesHelper(3);
 axesHelper.visible = false;
 scene.add(axesHelper);
 
-const { ticksNum, tickDimension, movingTicksNum, tickColorsGradient } =
-  clockConfig;
+const { tickDimension, movingTicksNum, tickColorsGradient } = clockConfig;
 const { dimension, colors } = starsConfig;
 
 /** Plane **/
@@ -124,7 +123,7 @@ tickGeometry.translate(0, 2.8, 0);
 let staticTicks = [];
 const generateTicks = () => {
   staticTicks = [];
-  for (let i = 0; i < ticksNum; i++) {
+  for (let i = 0; i < clockConfig.ticksNum; i++) {
     const tick = new Three.Mesh(tickGeometry, tickMaterial);
     tick.rotation.z = i * ((Math.PI * 2) / clockConfig.ticksNum);
     scene.add(tick);
@@ -386,7 +385,7 @@ let tickingIntervalId;
 function ticking() {
   let index = 0;
   const execute = () => {
-    for (let i = 0; i < ticksNum; i++) {
+    for (let i = 0; i < clockConfig.ticksNum; i++) {
       scene.add(staticTicks[i]);
     }
     for (let i = 0; i < movingTicksNum; i++) {
