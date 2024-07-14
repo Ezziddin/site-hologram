@@ -42,6 +42,7 @@ const renderer = new Three.WebGLRenderer({
   canvas: canvas,
 });
 renderer.xr.enabled = true;
+renderer.shadowMap.enabled = true;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -97,6 +98,7 @@ const plane = new Three.Mesh(
   planeMaterial
 );
 plane.position.z = -0.5;
+plane.receiveShadow = true;
 scene.add(plane);
 
 gui
@@ -126,6 +128,7 @@ const generateTicks = () => {
   for (let i = 0; i < clockConfig.ticksNum; i++) {
     const tick = new Three.Mesh(tickGeometry, tickMaterial);
     tick.rotation.z = i * ((Math.PI * 2) / clockConfig.ticksNum);
+    tick.castShadow = true;
     scene.add(tick);
     staticTicks.push(tick);
   }
@@ -170,8 +173,7 @@ for (let i = 1; i <= movingTicksNum; i++) {
   tickGeometry.translate(0, 2.8, z / 2 - tickDimension.z / 2);
 
   const tick = new Three.Mesh(tickGeometry, movingTickMaterial);
-  // tick.material.depthTest = false;
-  // tick.renderOrder = 10;
+  tick.castShadow = true;
   scene.add(tick);
   movingTicks.push(tick);
   movingTickColors
@@ -207,6 +209,7 @@ fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
     textGeometry.center();
     text = new Three.Mesh(textGeometry, tickMaterial);
     text.position.z = 0.3;
+    text.castShadow = true;
     scene.add(text);
   };
 
@@ -224,6 +227,7 @@ fontLoader.load('/helvetiker_bold.typeface.json', (font) => {
     .step(0.1);
 
   text.position.z = 0.3;
+  text.castShadow = true;
   scene.add(text);
 });
 
@@ -301,7 +305,7 @@ const generateStart = () => {
     geometries[sizeIndex],
     materials[colorIndex]
   );
-
+  movePointLight.castShadow = true;
   movePointLight.position.set(x, y, z);
   moveLight.position.set(x, y, z);
   scene.add(movePointLight);
