@@ -306,6 +306,12 @@ const generateStart = () => {
     materials[colorIndex]
   );
   movePointLight.castShadow = true;
+  movePointLight.shadow.camera.far = 4;
+  movePointLight.shadow.camera.near = 0.2;
+  movePointLight.shadow.camera.top = 4;
+  movePointLight.shadow.camera.bottom = -4;
+  movePointLight.shadow.camera.left = 4;
+  movePointLight.shadow.camera.right = -4;
   movePointLight.position.set(x, y, z);
   moveLight.position.set(x, y, z);
   scene.add(movePointLight);
